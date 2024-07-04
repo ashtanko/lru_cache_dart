@@ -2,6 +2,14 @@
 
 `lru_cache` is a Dart package that provides a simple and efficient implementation of an LRU (Least Recently Used) cache. This package uses Dart's built-in `LinkedHashMap` to maintain the order of elements based on their access history, making it suitable for scenarios where you want to limit the number of cached items and evict the least recently used items when the cache reaches its maximum capacity.
 
+[![Coverage](https://github.com/ashtanko/lru_cache/actions/workflows/coverage.yml/badge.svg)](https://github.com/ashtanko/lru_cache/actions/workflows/coverage.yml)
+[![Dart CI](https://github.com/ashtanko/lru_cache/actions/workflows/build.yml/badge.svg)](https://github.com/ashtanko/lru_cache/actions/workflows/build.yml)
+
+[![lru_cache](https://img.shields.io/pub/v/lru_cache?label=lru_cache)](https://pub.dev/packages/lru_cache)
+
+[![CodeFactor](https://www.codefactor.io/repository/github/ashtanko/lru_cache/badge)](https://www.codefactor.io/repository/github/ashtanko/lru_cache)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/a03583ebe6b945c1b2c594b5809e908f)](https://app.codacy.com/gh/ashtanko/lru_cache/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
+
 ### Features
 
 - **LRU (Least Recently Used) Cache**: Keeps track of the most recently accessed items and evicts the least recently used items when the cache reaches its maximum size.

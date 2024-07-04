@@ -24,13 +24,13 @@ jobs:
           path: coverage/lcov.info
           min_coverage: 50
 
-#      - uses: codecov/codecov-action@v3
-#        with:
-#          token: ${{ secrets.CODECOV_TOKEN }}
-#          file: coverage/lcov.info
-#
-#      - name: Run codacy-coverage-reporter
-#        uses: codacy/codacy-coverage-reporter-action@v1
-#        with:
-#          project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
-#          coverage-reports: ./coverage/lcov.info
+      - uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: coverage/lcov.info
+
+      - name: Run codacy-coverage-reporter
+        uses: codacy/codacy-coverage-reporter-action@v1
+        with:
+          project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+          coverage-reports: ./coverage/lcov.info
