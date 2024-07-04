@@ -6,7 +6,7 @@ version: 0.0.1
 repository: https://github.com/ashtanko/lru_cache
 
 topics:
-  - lru_cache
+  - lru-cache
   - cache
   - caching
 
