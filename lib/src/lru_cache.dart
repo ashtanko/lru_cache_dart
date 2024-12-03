@@ -1,6 +1,9 @@
 import 'dart:collection';
 
-/// A simple LRU (Least Recently Used) Cache implementation.
+/// An implementation of a Least Recently Used (LRU) Cache.
+///
+/// This cache holds a fixed maximum number of entries defined by [maxSize].
+/// When the cache exceeds this limit, the least recently used entries are evicted.
 class LruCache<K, V> {
   final LinkedHashMap<K, V> _map;
   int _size = 0;
@@ -11,35 +14,38 @@ class LruCache<K, V> {
   int _hitCount = 0;
   int _missCount = 0;
 
-  /// Creates an [LruCache] with the given [maxSize].
+  /// Creates an [LruCache] with a maximum capacity of [maxSize].
   ///
   /// The [maxSize] must be greater than 0.
   LruCache(int maxSize)
-      : assert(maxSize > 0, 'maxSize <= 0'),
+      : assert(maxSize > 0, 'maxSize must be greater than 0'),
         _maxSize = maxSize,
         _map = LinkedHashMap<K, V>();
 
-  /// Changes the maximum size of the cache and trims it if necessary.
+  /// Updates the maximum size of the cache and trims it if necessary.
+  ///
+  /// The [maxSize] must be greater than 0.
   void resize(int maxSize) {
-    assert(maxSize > 0, 'maxSize <= 0');
+    assert(maxSize > 0, 'maxSize must be greater than 0');
     _maxSize = maxSize;
     _trimToSize(maxSize);
   }
 
-  /// Retrieves a value from the cache for the given [key].
+  /// Retrieves the value associated with the [key].
   ///
-  /// Returns the value if it exists, otherwise returns null.
+  /// - If the value exists in the cache, it is returned and marked as recently used.
+  /// - If the value does not exist, [create] is called to generate a new value,
+  /// which is then stored in the cache.
+  ///
+  /// Returns the value if found or created, or `null` if it cannot be created.
   V? get(K key) {
-    assert(key != null, 'key == null');
-    V? mapValue;
-
-    mapValue = _map[key];
+    assert(key != null, 'key must not be null');
+    V? mapValue = _map[key];
     if (mapValue != null) {
       _hitCount++;
       return mapValue;
     }
     _missCount++;
-
     final V? createdValue = create(key);
     if (createdValue == null) {
       return null;
@@ -48,7 +54,7 @@ class LruCache<K, V> {
     _createCount++;
     mapValue = _map.putIfAbsent(key, () => createdValue);
     if (mapValue != null) {
-      // There was a conflict so undo that last put
+      // Undo the put if there was a conflict
       _map[key] = mapValue;
     } else {
       _size += safeSizeOf(key, createdValue);
@@ -63,16 +69,19 @@ class LruCache<K, V> {
     }
   }
 
-  /// Puts a value in the cache for the given [key].
+  /// Inserts or updates the value for the given [key].
   ///
-  /// Returns the previous value associated with the [key], or null if there was no mapping for the [key].
+  /// - If an entry already exists, its value is updated.
+  /// - If a new entry is created, the cache is trimmed to fit within the
+  /// maximum size.
+  ///
+  /// Returns the previous value associated with [key], or `null` if none existed.
   V? put(K key, V value) {
-    assert(key != null && value != null, 'key == null || value == null');
-    V? previous;
-
+    assert(key != null && value != null, 'key and value must not be null');
     _putCount++;
     _size += safeSizeOf(key, value);
-    previous = _map[key];
+
+    final V? previous = _map[key];
     if (previous != null) {
       _size -= safeSizeOf(key, previous);
     }
@@ -85,7 +94,8 @@ class LruCache<K, V> {
     return previous;
   }
 
-  /// Trims the cache to the specified [maxSize].
+  /// Removes entries from the cache until its size is less than or equal
+  /// to [maxSize].
   void _trimToSize(int maxSize) {
     while (true) {
       K key;
@@ -116,18 +126,17 @@ class LruCache<K, V> {
   }
 
   /// Returns the eldest entry in the cache.
-  MapEntry<K, V>? _eldest() {
-    return _map.entries.firstOrNull;
-  }
-
-  /// Removes a value from the cache for the given [key].
   ///
-  /// Returns the previous value associated with the [key], or null if there was no mapping for the [key].
-  V? remove(K key) {
-    assert(key != null, 'key == null');
-    V? previous;
+  /// If the cache is empty, returns `null`.
+  MapEntry<K, V>? _eldest() => _map.entries.firstOrNull;
 
-    previous = _map.remove(key);
+  /// Removes the entry associated with the given [key].
+  ///
+  /// Returns the previous value associated with [key], or `null` if no such
+  /// entry existed.
+  V? remove(K key) {
+    assert(key != null, 'key must not be null');
+    final V? previous = _map.remove(key);
     if (previous != null) {
       _size -= safeSizeOf(key, previous);
       entryRemoved(false, key, previous, null);
@@ -137,61 +146,55 @@ class LruCache<K, V> {
 
   /// Called when an entry is removed from the cache.
   ///
-  /// This method can be overridden to provide custom behavior on entry removal.
+  /// Override to handle custom removal behavior.
   void entryRemoved(bool evicted, K key, V oldValue, V? newValue) {}
 
   /// Creates a value for the given [key].
   ///
-  /// This method can be overridden to provide custom behavior on cache miss.
-  V? create(K key) {
-    return null;
-  }
+  /// Override to provide custom behavior when a value is not found in the cache.
+  V? create(K key) => null;
 
-  /// Returns the size of the entry.
+  /// Returns the size of the given [key]-[value] pair.
   ///
-  /// The default implementation returns 1. Override this method if size is different.
+  /// Override [sizeOf] for custom sizing. This method ensures the size is
+  /// non-negative.
   int safeSizeOf(K key, V value) {
     final int result = sizeOf(key, value);
     if (result < 0) {
-      throw StateError('Negative size: $key=$value');
+      throw StateError('Size must be non-negative: $key=$value');
     }
     return result;
   }
 
-  int sizeOf(K key, V value) {
-    return 1;
-  }
+  /// Computes the size of a cache entry. Defaults to `1`.
+  int sizeOf(K key, V value) => 1;
 
   /// Evicts all entries from the cache.
-  void evictAll() {
-    _trimToSize(-1); // -1 will evict 0-sized elements
-  }
+  void evictAll() => _trimToSize(-1);
 
   /// Returns the current size of the cache.
   int size() => _size;
 
-  /// Returns the maximum size of the cache.
+  /// Returns the maximum capacity of the cache.
   int maxSize() => _maxSize;
 
-  /// Returns the number of cache hits.
+  /// Returns the total number of cache hits.
   int hitCount() => _hitCount;
 
-  /// Returns the number of cache misses.
+  /// Returns the total number of cache misses.
   int missCount() => _missCount;
 
-  /// Returns the number of entries created.
+  /// Returns the total number of values created by [create].
   int createCount() => _createCount;
 
-  /// Returns the number of entries put into the cache.
+  /// Returns the total number of values added to the cache.
   int putCount() => _putCount;
 
-  /// Returns the number of entries evicted from the cache.
+  /// Returns the total number of entries evicted.
   int evictionCount() => _evictionCount;
 
-  /// Returns a snapshot of the current cache.
-  Map<K, V> snapshot() {
-    return Map<K, V>.from(_map);
-  }
+  /// Returns a snapshot of the cache as a [Map].
+  Map<K, V> snapshot() => Map<K, V>.from(_map);
 
   @override
   String toString() {
