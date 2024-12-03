@@ -7,7 +7,7 @@
 
 [![lru_cache](https://img.shields.io/pub/v/lru_cache?label=lru_cache)](https://pub.dev/packages/lru_cache)
 
-[![CodeFactor](https://www.codefactor.io/repository/github/ashtanko/lru_cache/badge)](https://www.codefactor.io/repository/github/ashtanko/lru_cache)
+[![CodeFactor](https://www.codefactor.io/repository/github/ashtanko/lru_cache_dart/badge)](https://www.codefactor.io/repository/github/ashtanko/lru_cache_dart)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/a03583ebe6b945c1b2c594b5809e908f)](https://app.codacy.com/gh/ashtanko/lru_cache/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 [![codecov](https://codecov.io/gh/ashtanko/lru_cache/graph/badge.svg?token=V9O0ALxsV1)](https://codecov.io/gh/ashtanko/lru_cache)
 [![Codacy Badge](https://app.codacy.com/project/badge/Coverage/a03583ebe6b945c1b2c594b5809e908f)](https://app.codacy.com/gh/ashtanko/lru_cache/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_coverage)
