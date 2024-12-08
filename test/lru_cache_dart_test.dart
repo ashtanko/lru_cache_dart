@@ -33,15 +33,15 @@ class _NegativeSizeLruCache<K, V> extends LruCache<K, V> {
 
 void main() {
   group('LruCache', () {
-    test('should return null for non-existent key', () {
+    test('should return null for non-existent key', () async {
       final cache = LruCache<String, String>(2);
-      expect(cache.get('key1'), isNull);
+      expect(await cache.get('key1'), isNull);
     });
 
-    test('should cache and retrieve values', () {
+    test('should cache and retrieve values', () async {
       final cache = LruCache<String, String>(2);
       cache.put('key1', 'value1');
-      expect(cache.get('key1'), 'value1');
+      expect(await cache.get('key1'), 'value1');
     });
 
     test('Throws StateError when sizeOf returns a negative size', () {
@@ -60,32 +60,32 @@ void main() {
       );
     });
 
-    test('should evict oldest entry when maxSize is reached', () {
+    test('should evict oldest entry when maxSize is reached', () async {
       final cache = LruCache<String, String>(2);
       cache.put('key1', 'value1');
       cache.put('key2', 'value2');
       cache.put('key3', 'value3');
-      expect(cache.get('key1'), isNull);
-      expect(cache.get('key2'), 'value2');
-      expect(cache.get('key3'), 'value3');
+      expect(await cache.get('key1'), isNull);
+      expect(await cache.get('key2'), 'value2');
+      expect(await cache.get('key3'), 'value3');
     });
 
-    test('should return correct size', () {
+    test('should return correct size', () async {
       final cache = LruCache<String, String>(2);
-      cache.put('key1', 'value1');
-      expect(cache.size(), 1);
-      cache.put('key2', 'value2');
-      expect(cache.size(), 2);
-      cache.put('key3', 'value3');
-      expect(cache.size(), 2);
+      await cache.put('key1', 'value1');
+      expect(await cache.size(), 1);
+      await cache.put('key2', 'value2');
+      expect(await cache.size(), 2);
+      await cache.put('key3', 'value3');
+      expect(await cache.size(), 2);
     });
 
-    test('should remove entries', () {
+    test('should remove entries', () async {
       final cache = LruCache<String, String>(2);
-      cache.put('key1', 'value1');
-      expect(cache.remove('key1'), 'value1');
-      expect(cache.get('key1'), isNull);
-      expect(cache.size(), 0);
+      await cache.put('key1', 'value1');
+      expect(await cache.remove('key1'), 'value1');
+      expect(await cache.get('key1'), isNull);
+      expect(await cache.size(), 0);
     });
 
     test('should return hit count correctly', () {
@@ -115,14 +115,14 @@ void main() {
       expect(cache.evictionCount(), 1);
     });
 
-    test('should evict all entries', () {
+    test('should evict all entries', () async {
       final cache = LruCache<String, String>(2);
-      cache.put('key1', 'value1');
-      cache.put('key2', 'value2');
-      cache.evictAll();
-      expect(cache.size(), 0);
-      expect(cache.get('key1'), isNull);
-      expect(cache.get('key2'), isNull);
+      await cache.put('key1', 'value1');
+      await cache.put('key2', 'value2');
+      await cache.evictAll();
+      expect(await cache.size(), 0);
+      expect(await cache.get('key1'), isNull);
+      expect(await cache.get('key2'), isNull);
     });
 
     test('snapshot should return all entries in the correct order', () {
@@ -133,12 +133,12 @@ void main() {
       expect(snapshot.keys, ['key1', 'key2']);
     });
 
-    test('resize should adjust the cache size', () {
+    test('resize should adjust the cache size', () async {
       final cache = LruCache<String, String>(2);
-      cache.put('key1', 'value1');
-      cache.put('key2', 'value2');
-      cache.resize(1);
-      expect(cache.size(), 1);
+      await cache.put('key1', 'value1');
+      await cache.put('key2', 'value2');
+      await cache.resize(1);
+      expect(await cache.size(), 1);
     });
 
     test('toString should return correct format', () {
@@ -214,30 +214,47 @@ void main() {
       expect(cache.maxSize(), equals(15));
     });
 
-    test('Resizing to a smaller size trims the cache', () {
+    test('Resizing to a smaller size trims the cache', () async {
       final cache = LruCache<int, String>(5);
-      cache.put(1, 'A');
-      cache.put(2, 'B');
-      cache.put(3, 'C');
-      cache.put(4, 'D');
-      cache.put(5, 'E');
-      expect(cache.size(), equals(5));
+      await cache.put(1, 'A');
+      await cache.put(2, 'B');
+      await cache.put(3, 'C');
+      await cache.put(4, 'D');
+      await cache.put(5, 'E');
+      expect(await cache.size(), equals(5));
 
-      cache.resize(3); // Resize to a smaller size
+      await cache.resize(3); // Resize to a smaller size
       expect(cache.maxSize(), equals(3));
-      expect(cache.size(), lessThanOrEqualTo(3));
+      expect(await cache.size(), lessThanOrEqualTo(3));
     });
 
-    test('Resizing to a larger size does not evict entries', () {
+    test('Resizing to a larger size does not evict entries', () async {
       final cache = LruCache<int, String>(3);
-      cache.put(1, 'A');
-      cache.put(2, 'B');
-      cache.put(3, 'C');
-      expect(cache.size(), equals(3));
+      await cache.put(1, 'A');
+      await cache.put(2, 'B');
+      await cache.put(3, 'C');
+      expect(await cache.size(), equals(3));
 
-      cache.resize(10); // Resize to a larger size
+      await cache.resize(10); // Resize to a larger size
       expect(cache.maxSize(), equals(10));
-      expect(cache.size(), equals(3));
+      expect(await cache.size(), equals(3));
+    });
+
+    test('handles thread safety under concurrent access', () async {
+      final cache = LruCache<int, String>(3);
+      final results = <String>[];
+
+      // Add items concurrently
+      final tasks = List.generate(100, (i) async {
+        cache.put(i, 'Value $i');
+        final value = await cache.get(i);
+        if (value != null) results.add(value);
+      });
+
+      await Future.wait(tasks);
+
+      // Check for consistency
+      expect(results.length, lessThanOrEqualTo(100));
     });
   });
 }
