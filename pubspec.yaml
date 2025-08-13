@@ -1,8 +1,10 @@
 name: lru_cache
 homepage: https://shtanko.dev
 description: >-
-  a simple least recently used (LRU) cache implementation in dart.
-version: 0.0.2
+  A high-performance, thread-safe LRU (Least Recently Used) cache implementation 
+  for Dart and Flutter applications with comprehensive statistics tracking, 
+  customizable size calculations, and dynamic resizing capabilities.
+version: 0.0.3
 repository: https://github.com/ashtanko/lru_cache
 
 topics:
