@@ -11,9 +11,12 @@ class ImageCache extends LruCache<String, List<int>> {
   }
 
   @override
-  void entryRemoved(bool evicted, String key, List<int> oldValue, List<int>? newValue) {
+  void entryRemoved(
+      bool evicted, String key, List<int> oldValue, List<int>? newValue) {
     if (evicted) {
-      print('Image evicted from cache: $key (${oldValue.length} bytes)'); // ignore: avoid_print
+      // ignore: avoid_print
+      print(
+          'Image evicted from cache: $key (${oldValue.length} bytes)'); // ignore: avoid_print
     } else {
       print('Image replaced in cache: $key'); // ignore: avoid_print
     }
@@ -51,7 +54,8 @@ class UserProfileCache extends LruCache<int, Map<String, dynamic>> {
   }
 
   @override
-  void entryRemoved(bool evicted, int key, Map<String, dynamic> oldValue, Map<String, dynamic>? newValue) {
+  void entryRemoved(bool evicted, int key, Map<String, dynamic> oldValue,
+      Map<String, dynamic>? newValue) {
     if (evicted) {
       print('User profile evicted: ${oldValue['name']}'); // ignore: avoid_print
     }
@@ -83,12 +87,18 @@ Future<void> main() async {
   print('\nCache after adding 4th item:'); // ignore: avoid_print
   print('Size: ${await basicCache.size()}'); // ignore: avoid_print
   print('Keys: ${await basicCache.keys()}'); // ignore: avoid_print
-  print('Hit rate: ${basicCache.hitRate().toStringAsFixed(1)}%'); // ignore: avoid_print
+  // ignore: avoid_print
+  print(
+      'Hit rate: ${basicCache.hitRate().toStringAsFixed(1)}%'); // ignore: avoid_print
 
   // Check if items exist
   print('\nChecking if items exist:'); // ignore: avoid_print
-  print('key1 exists: ${await basicCache.containsKey('key1')}'); // ignore: avoid_print
-  print('key2 exists: ${await basicCache.containsKey('key2')}'); // ignore: avoid_print // Should be false (evicted)
+  // ignore: avoid_print
+  print(
+      'key1 exists: ${await basicCache.containsKey('key1')}'); // ignore: avoid_print
+  // ignore: avoid_print
+  print(
+      'key2 exists: ${await basicCache.containsKey('key2')}'); // ignore: avoid_print // Should be false (evicted)
 
   print('\n=== Image Cache Example ===\n'); // ignore: avoid_print
 
@@ -100,9 +110,14 @@ Future<void> main() async {
   final image2 = await imageCache.get('image2.jpg');
   final image3 = await imageCache.get('image3.jpg');
 
-  print('Loaded ${image1?.length ?? 0} bytes for image1.jpg'); // ignore: avoid_print
-  print('Loaded ${image2?.length ?? 0} bytes for image2.jpg'); // ignore: avoid_print
-  print('Loaded ${image3?.length ?? 0} bytes for image3.jpg'); // ignore: avoid_print
+  // ignore: avoid_print
+  print('Loaded ${image1?.length ?? 0} bytes for image1.jpg');
+  // ignore: avoid_print
+  print(
+      'Loaded ${image2?.length ?? 0} bytes for image2.jpg'); // ignore: avoid_print
+  // ignore: avoid_print
+  print(
+      'Loaded ${image3?.length ?? 0} bytes for image3.jpg'); // ignore: avoid_print
 
   // Access image1 again to make it most recently used
   await imageCache.get('image1.jpg');
@@ -142,7 +157,9 @@ Future<void> main() async {
 
   print('\nUser cache statistics:'); // ignore: avoid_print
   print('Size: ${await userCache.size()}'); // ignore: avoid_print
-  print('Hit rate: ${userCache.hitRate().toStringAsFixed(1)}%'); // ignore: avoid_print
+  // ignore: avoid_print
+  print(
+      'Hit rate: ${userCache.hitRate().toStringAsFixed(1)}%'); // ignore: avoid_print
   print('Create count: ${userCache.createCount()}'); // ignore: avoid_print
 
   print('\n=== Cache Resize Example ===\n'); // ignore: avoid_print
@@ -188,10 +205,15 @@ Future<void> main() async {
   }
 
   stopwatch.stop();
-
-  print('Performance test completed in ${stopwatch.elapsedMilliseconds}ms'); // ignore: avoid_print
-  print('Operations: ${perfCache.putCount() + perfCache.hitCount() + perfCache.missCount()}'); // ignore: avoid_print
-  print('Hit rate: ${perfCache.hitRate().toStringAsFixed(1)}%'); // ignore: avoid_print
+// ignore: avoid_print
+  print(
+      'Performance test completed in ${stopwatch.elapsedMilliseconds}ms'); // ignore: avoid_print
+  // ignore: avoid_print
+  print(
+      'Operations: ${perfCache.putCount() + perfCache.hitCount() + perfCache.missCount()}'); // ignore: avoid_print
+  // ignore: avoid_print
+  print(
+      'Hit rate: ${perfCache.hitRate().toStringAsFixed(1)}%'); // ignore: avoid_print
 
   print('\n=== Cache Statistics ===\n'); // ignore: avoid_print
 
