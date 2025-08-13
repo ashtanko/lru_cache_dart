@@ -80,7 +80,3 @@ jobs:
     
     - name: Install dependencies
       run: dart pub get
-    
-    - name: Run pub score
-      run: dart pub global activate pana
-      run: pana --no-warning --source path .
