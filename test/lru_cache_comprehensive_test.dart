@@ -41,20 +41,20 @@ void main() {
     group('Basic Operations', () {
       test('should handle null key assertion', () {
         final cache = LruCache<String, String>(1);
-        expect(() => cache.get(null as String), throwsAssertionError);
-        expect(() => cache.put(null as String, 'value'), throwsAssertionError);
-        expect(() => cache.remove(null as String), throwsAssertionError);
-        expect(() => cache.containsKey(null as String), throwsAssertionError);
+        expect(() => cache.get(null as String), throwsA(isA<AssertionError>()));
+        expect(() => cache.put(null as String, 'value'), throwsA(isA<AssertionError>()));
+        expect(() => cache.remove(null as String), throwsA(isA<AssertionError>()));
+        expect(() => cache.containsKey(null as String), throwsA(isA<AssertionError>()));
       });
 
       test('should handle null value assertion', () {
         final cache = LruCache<String, String>(1);
-        expect(() => cache.put('key', null as String), throwsAssertionError);
+        expect(() => cache.put('key', null as String), throwsA(isA<AssertionError>()));
       });
 
       test('should handle zero maxSize assertion', () {
-        expect(() => LruCache<String, String>(0), throwsAssertionError);
-        expect(() => LruCache<String, String>(-1), throwsAssertionError);
+        expect(() => LruCache<String, String>(0), throwsA(isA<AssertionError>()));
+        expect(() => LruCache<String, String>(-1), throwsA(isA<AssertionError>()));
       });
 
       test('should handle single entry cache', () async {

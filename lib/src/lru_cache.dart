@@ -161,35 +161,33 @@ class LruCache<K, V> {
   /// If the [maxSize] is less than 0, all entries are evicted.
   /// This method is called by [put] and [resize] after adding or updating
   /// an entry.
-  Future<void> _trimToSize(int maxSize) async {
-    await _lock.synchronized(() {
-      while (true) {
-        K key;
-        V value;
+  void _trimToSize(int maxSize) {
+    while (true) {
+      K key;
+      V value;
 
-        if (_size < 0 || (_map.isEmpty && _size != 0)) {
-          throw StateError(
-            '$runtimeType.sizeOf() is reporting inconsistent results!',
-          );
-        }
-
-        if (_size <= maxSize) {
-          break;
-        }
-
-        final toEvict = _eldest();
-        if (toEvict == null) {
-          break;
-        }
-
-        key = toEvict.key;
-        value = toEvict.value;
-        _map.remove(key);
-        _size -= safeSizeOf(key, value);
-        _evictionCount++;
-        entryRemoved(true, key, value, null);
+      if (_size < 0 || (_map.isEmpty && _size != 0)) {
+        throw StateError(
+          '$runtimeType.sizeOf() is reporting inconsistent results!',
+        );
       }
-    });
+
+      if (_size <= maxSize) {
+        break;
+      }
+
+      final toEvict = _eldest();
+      if (toEvict == null) {
+        break;
+      }
+
+      key = toEvict.key;
+      value = toEvict.value;
+      _map.remove(key);
+      _size -= safeSizeOf(key, value);
+      _evictionCount++;
+      entryRemoved(true, key, value, null);
+    }
   }
 
   MapEntry<K, V>? _eldest() => _map.entries.firstOrNull;
@@ -237,7 +235,9 @@ class LruCache<K, V> {
 
   /// Removes all entries from the cache.
   Future<void> evictAll() async {
-    await _trimToSize(-1);
+    await _lock.synchronized(() {
+      _trimToSize(-1);
+    });
   }
 
   /// Returns the number of entries in the cache.
