@@ -15,13 +15,19 @@ void main() {
 
       stopwatch.stop();
 
-      print('High-frequency operations benchmark:');
+      print('High-frequency operations benchmark:'); // ignore: avoid_print
+      // ignore: avoid_print
       print(
-          '  Operations: ${cache.putCount() + cache.hitCount() + cache.missCount()}');
-      print('  Time: ${stopwatch.elapsedMilliseconds}ms');
+          '  Operations: ${cache.putCount() + cache.hitCount() + cache.missCount()}'); // ignore: avoid_print
+      // ignore: avoid_print
       print(
-          '  Operations per second: ${(20000 / stopwatch.elapsedMilliseconds * 1000).round()}');
-      print('  Hit rate: ${cache.hitRate().toStringAsFixed(1)}%');
+          '  Time: ${stopwatch.elapsedMilliseconds}ms'); // ignore: avoid_print
+      // ignore: avoid_print
+      print(
+          '  Operations per second: ${(20000 / stopwatch.elapsedMilliseconds * 1000).round()}'); // ignore: avoid_print
+      // ignore: avoid_print
+      print(
+          '  Hit rate: ${cache.hitRate().toStringAsFixed(1)}%'); // ignore: avoid_print
 
       expect(stopwatch.elapsedMilliseconds,
           lessThan(5000)); // Should complete within 5 seconds
@@ -40,12 +46,15 @@ void main() {
 
       stopwatch.stop();
 
-      print('Frequent evictions benchmark:');
-      print('  Operations: ${cache.putCount()}');
-      print('  Evictions: ${cache.evictionCount()}');
-      print('  Time: ${stopwatch.elapsedMilliseconds}ms');
+      print('Frequent evictions benchmark:'); // ignore: avoid_print
+      print('  Operations: ${cache.putCount()}'); // ignore: avoid_print
+      print('  Evictions: ${cache.evictionCount()}'); // ignore: avoid_print
+      // ignore: avoid_print
       print(
-          '  Operations per second: ${(1000 / stopwatch.elapsedMilliseconds * 1000).round()}');
+          '  Time: ${stopwatch.elapsedMilliseconds}ms'); // ignore: avoid_print
+      // ignore: avoid_print
+      print(
+          '  Operations per second: ${(1000 / stopwatch.elapsedMilliseconds * 1000).round()}'); // ignore: avoid_print
 
       expect(stopwatch.elapsedMilliseconds,
           lessThan(1000)); // Should complete within 1 second
@@ -72,12 +81,19 @@ void main() {
       await Future.wait(futures);
       stopwatch.stop();
 
-      print('Concurrent access benchmark:');
-      print('  Concurrent operations: ${futures.length}');
-      print('  Time: ${stopwatch.elapsedMilliseconds}ms');
+      print('Concurrent access benchmark:'); // ignore: avoid_print
+      // ignore: avoid_print
       print(
-          '  Operations per second: ${(futures.length / stopwatch.elapsedMilliseconds * 1000).round()}');
-      print('  Hit rate: ${cache.hitRate().toStringAsFixed(1)}%');
+          '  Concurrent operations: ${futures.length}'); // ignore: avoid_print
+      // ignore: avoid_print
+      print(
+          '  Time: ${stopwatch.elapsedMilliseconds}ms'); // ignore: avoid_print
+      // ignore: avoid_print
+      print(
+          '  Operations per second: ${(futures.length / stopwatch.elapsedMilliseconds * 1000).round()}'); // ignore: avoid_print
+      // ignore: avoid_print
+      print(
+          '  Hit rate: ${cache.hitRate().toStringAsFixed(1)}%'); // ignore: avoid_print
 
       expect(stopwatch.elapsedMilliseconds,
           lessThan(3000)); // Should complete within 3 seconds
@@ -95,12 +111,15 @@ void main() {
 
       stopwatch.stop();
 
-      print('Large cache benchmark:');
-      print('  Cache size: 10,000 entries');
-      print('  Operations: ${cache.putCount()}');
-      print('  Time: ${stopwatch.elapsedMilliseconds}ms');
+      print('Large cache benchmark:'); // ignore: avoid_print
+      print('  Cache size: 10,000 entries'); // ignore: avoid_print
+      print('  Operations: ${cache.putCount()}'); // ignore: avoid_print
+      // ignore: avoid_print
       print(
-          '  Operations per second: ${(10000 / stopwatch.elapsedMilliseconds * 1000).round()}');
+          '  Time: ${stopwatch.elapsedMilliseconds}ms'); // ignore: avoid_print
+      // ignore: avoid_print
+      print(
+          '  Operations per second: ${(10000 / stopwatch.elapsedMilliseconds * 1000).round()}'); // ignore: avoid_print
 
       expect(stopwatch.elapsedMilliseconds,
           lessThan(2000)); // Should complete within 2 seconds
@@ -116,27 +135,25 @@ void main() {
         switch (i % 4) {
           case 0:
             await cache.put(i, 'value$i');
-            break;
           case 1:
             await cache.get(i);
-            break;
           case 2:
             await cache.containsKey(i);
-            break;
           case 3:
             await cache.remove(i);
-            break;
         }
       }
 
       stopwatch.stop();
 
-      print('Mixed operations benchmark:');
-      print('  Operations: 5,000');
+      print('Mixed operations benchmark:'); // ignore: avoid_print
+      print('  Operations: 5,000'); // ignore: avoid_print
+      // ignore: avoid_print
       print('  Time: ${stopwatch.elapsedMilliseconds}ms');
+      // ignore: avoid_print
       print(
           '  Operations per second: ${(5000 / stopwatch.elapsedMilliseconds * 1000).round()}');
-      print('  Final cache size: ${await cache.size()}');
+      print('  Final cache size: ${await cache.size()}'); // ignore: avoid_print
 
       expect(stopwatch.elapsedMilliseconds,
           lessThan(3000)); // Should complete within 3 seconds
@@ -157,11 +174,14 @@ void main() {
 
       stopwatch.stop();
 
-      print('String operations benchmark:');
-      print('  Operations: 2,000');
+      print('String operations benchmark:'); // ignore: avoid_print
+      print('  Operations: 2,000'); // ignore: avoid_print
+      // ignore: avoid_print
       print('  Time: ${stopwatch.elapsedMilliseconds}ms');
+      // ignore: avoid_print
       print(
           '  Operations per second: ${(2000 / stopwatch.elapsedMilliseconds * 1000).round()}');
+      // ignore: avoid_print
       print('  Hit rate: ${cache.hitRate().toStringAsFixed(1)}%');
 
       expect(stopwatch.elapsedMilliseconds,

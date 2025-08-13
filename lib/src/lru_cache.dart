@@ -12,16 +12,16 @@ import 'package:synchronized/synchronized.dart';
 /// Example usage:
 /// ```dart
 /// final cache = LruCache<String, String>(maxSize: 100);
-/// 
+///
 /// // Add items to cache
 /// await cache.put('key1', 'value1');
-/// 
+///
 /// // Retrieve items
 /// final value = await cache.get('key1');
-/// 
+///
 /// // Check if key exists
 /// final exists = await cache.containsKey('key1');
-/// 
+///
 /// // Get cache statistics
 /// print('Hit rate: ${cache.hitRate()}%');
 /// ```
@@ -85,7 +85,7 @@ class LruCache<K, V> {
   Future<V?> get(K key) async {
     assert(key != null, 'key must not be null');
     return await _lock.synchronized(() {
-      V? mapValue = _map[key];
+      final V? mapValue = _map[key];
       if (mapValue != null) {
         _hitCount++;
         // Move to end to mark as most recently used
@@ -127,11 +127,11 @@ class LruCache<K, V> {
   /// Example:
   /// ```dart
   /// final cache = LruCache<String, String>(2);
-  /// 
+  ///
   /// // Add new entry
   /// final previous = await cache.put('key1', 'value1');
   /// print(previous); // null
-  /// 
+  ///
   /// // Replace existing entry
   /// final previous = await cache.put('key1', 'new_value');
   /// print(previous); // 'value1'

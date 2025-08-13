@@ -3,7 +3,8 @@ import 'package:test/test.dart';
 void main() {
   group('Matcher Tests', () {
     test('should work with throwsA and isA', () {
-      expect(() => throw AssertionError('test'), throwsA(isA<AssertionError>()));
+      expect(
+          () => throw AssertionError('test'), throwsA(isA<AssertionError>()));
       expect(() => throw StateError('test'), throwsA(isA<StateError>()));
     });
 
