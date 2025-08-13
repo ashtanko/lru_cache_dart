@@ -2,8 +2,39 @@ import 'dart:collection';
 
 import 'package:synchronized/synchronized.dart';
 
-/// A cache that holds a fixed number of elements and evicts the least
-/// recently used element when full.
+/// A thread-safe Least Recently Used (LRU) cache implementation.
+///
+/// This cache maintains a fixed maximum size and automatically evicts the least
+/// recently used entries when the cache reaches its capacity. The cache is
+/// thread-safe and uses synchronization to ensure consistency under concurrent
+/// access.
+///
+/// Example usage:
+/// ```dart
+/// final cache = LruCache<String, String>(maxSize: 100);
+/// 
+/// // Add items to cache
+/// await cache.put('key1', 'value1');
+/// 
+/// // Retrieve items
+/// final value = await cache.get('key1');
+/// 
+/// // Check if key exists
+/// final exists = await cache.containsKey('key1');
+/// 
+/// // Get cache statistics
+/// print('Hit rate: ${cache.hitRate()}%');
+/// ```
+///
+/// The cache provides several statistics:
+/// - Hit count: Number of successful retrievals
+/// - Miss count: Number of failed retrievals
+/// - Hit rate: Percentage of successful retrievals
+/// - Eviction count: Number of entries evicted due to size limits
+///
+/// Type parameters:
+/// - [K]: The type of keys stored in the cache
+/// - [V]: The type of values stored in the cache
 class LruCache<K, V> {
   final LinkedHashMap<K, V> _map;
   final Lock _lock = Lock();
@@ -16,6 +47,18 @@ class LruCache<K, V> {
   int _hitCount = 0;
   int _missCount = 0;
 
+  /// Creates a new LRU cache with the specified maximum size.
+  ///
+  /// The [maxSize] parameter determines the maximum number of entries that can
+  /// be stored in the cache. When this limit is reached, the least recently
+  /// used entries will be automatically evicted.
+  ///
+  /// Throws an [AssertionError] if [maxSize] is not positive.
+  ///
+  /// Example:
+  /// ```dart
+  /// final cache = LruCache<String, String>(100);
+  /// ```
   LruCache(int maxSize)
       : assert(maxSize > 0, 'maxSize must be greater than 0'),
         _maxSize = maxSize,
@@ -45,6 +88,9 @@ class LruCache<K, V> {
       V? mapValue = _map[key];
       if (mapValue != null) {
         _hitCount++;
+        // Move to end to mark as most recently used
+        _map.remove(key);
+        _map[key] = mapValue;
         return mapValue;
       }
       _missCount++;
@@ -54,32 +100,42 @@ class LruCache<K, V> {
       }
 
       _createCount++;
-      mapValue = _map.putIfAbsent(key, () => createdValue);
-      if (mapValue != null) {
-        // Undo the put if there was a conflict
-        _map[key] = mapValue;
-      } else {
-        _size += safeSizeOf(key, createdValue);
-      }
-
-      if (mapValue != null) {
-        entryRemoved(false, key, createdValue, mapValue);
-        return mapValue;
-      } else {
-        _trimToSize(_maxSize);
-        return createdValue;
-      }
+      _map[key] = createdValue;
+      _size += safeSizeOf(key, createdValue);
+      _trimToSize(_maxSize);
+      return createdValue;
     });
   }
 
   /// Associates the [key] with the [value] in the cache.
-  /// If the [key] is already in the cache, the [value] is replaced and the
-  /// size of the cache is adjusted.
-  /// If the [key] is not in the cache, the [value] is added and the size of
-  /// the cache is adjusted.
-  /// If the size of the cache exceeds the [maxSize], the least recently used
-  /// entries are evicted until the size of the cache is less than or equal to
-  /// the [maxSize].
+  ///
+  /// If the [key] already exists in the cache, the existing value is replaced
+  /// with the new [value] and the previous value is returned. The key becomes
+  /// the most recently used.
+  ///
+  /// If the [key] does not exist, the [value] is added to the cache. If this
+  /// causes the cache to exceed its maximum size, the least recently used
+  /// entries are automatically evicted.
+  ///
+  /// This method is thread-safe and will block other operations until complete.
+  ///
+  /// Returns the previous value associated with [key], or `null` if there was
+  /// no previous value.
+  ///
+  /// Throws an [AssertionError] if [key] or [value] is `null`.
+  ///
+  /// Example:
+  /// ```dart
+  /// final cache = LruCache<String, String>(2);
+  /// 
+  /// // Add new entry
+  /// final previous = await cache.put('key1', 'value1');
+  /// print(previous); // null
+  /// 
+  /// // Replace existing entry
+  /// final previous = await cache.put('key1', 'new_value');
+  /// print(previous); // 'value1'
+  /// ```
   Future<V?> put(K key, V value) async {
     assert(key != null && value != null, 'key and value must not be null');
     return await _lock.synchronized(() {
@@ -209,6 +265,47 @@ class LruCache<K, V> {
 
   /// Returns a snapshot of the cache.
   Map<K, V> snapshot() => Map<K, V>.from(_map);
+
+  /// Returns the current hit rate as a percentage.
+  double hitRate() {
+    final int accesses = _hitCount + _missCount;
+    return accesses != 0 ? (100.0 * _hitCount / accesses) : 0.0;
+  }
+
+  /// Returns whether the cache contains the specified [key].
+  Future<bool> containsKey(K key) async {
+    assert(key != null, 'key must not be null');
+    return await _lock.synchronized(() => _map.containsKey(key));
+  }
+
+  /// Returns all keys in the cache in order of least recently used to most recently used.
+  Future<List<K>> keys() async {
+    return await _lock.synchronized(() => _map.keys.toList());
+  }
+
+  /// Returns all values in the cache in order of least recently used to most recently used.
+  Future<List<V>> values() async {
+    return await _lock.synchronized(() => _map.values.toList());
+  }
+
+  /// Returns whether the cache is empty.
+  Future<bool> isEmpty() async {
+    return await _lock.synchronized(() => _map.isEmpty);
+  }
+
+  /// Returns whether the cache is not empty.
+  Future<bool> isNotEmpty() async {
+    return await _lock.synchronized(() => _map.isNotEmpty);
+  }
+
+  /// Clears all statistics (hit count, miss count, etc.).
+  void clearStats() {
+    _hitCount = 0;
+    _missCount = 0;
+    _createCount = 0;
+    _putCount = 0;
+    _evictionCount = 0;
+  }
 
   @override
   String toString() {

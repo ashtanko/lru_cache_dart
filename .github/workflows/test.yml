@@ -1,0 +1,86 @@
+name: Test
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        dart-version: ['3.5.0', '3.6.0', '3.7.0']
+        platform: [vm, chrome]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Dart
+      uses: dart-lang/setup-dart@v1
+      with:
+        dart-version: ${{ matrix.dart-version }}
+    
+    - name: Install dependencies
+      run: dart pub get
+    
+    - name: Verify formatting
+      run: dart format --output=none --set-exit-if-changed .
+    
+    - name: Analyze project source
+      run: dart analyze
+    
+    - name: Run tests
+      run: dart test --platform=${{ matrix.platform }}
+    
+    - name: Run tests with coverage
+      if: matrix.platform == 'vm' && matrix.dart-version == '3.7.0'
+      run: dart test --coverage=coverage
+    
+    - name: Upload coverage to Codecov
+      if: matrix.platform == 'vm' && matrix.dart-version == '3.7.0'
+      uses: codecov/codecov-action@v3
+      with:
+        file: coverage/lcov.info
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: true
+
+  benchmark:
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Dart
+      uses: dart-lang/setup-dart@v1
+      with:
+        dart-version: '3.7.0'
+    
+    - name: Install dependencies
+      run: dart pub get
+    
+    - name: Run benchmark tests
+      run: dart test test/benchmark_test.dart --reporter=expanded
+
+  pub_score:
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Dart
+      uses: dart-lang/setup-dart@v1
+      with:
+        dart-version: '3.7.0'
+    
+    - name: Install dependencies
+      run: dart pub get
+    
+    - name: Run pub score
+      run: dart pub global activate pana
+      run: pana --no-warning --source path .
