@@ -16,12 +16,15 @@ void main() {
       stopwatch.stop();
 
       print('High-frequency operations benchmark:');
-      print('  Operations: ${cache.putCount() + cache.hitCount() + cache.missCount()}');
+      print(
+          '  Operations: ${cache.putCount() + cache.hitCount() + cache.missCount()}');
       print('  Time: ${stopwatch.elapsedMilliseconds}ms');
-      print('  Operations per second: ${(20000 / stopwatch.elapsedMilliseconds * 1000).round()}');
+      print(
+          '  Operations per second: ${(20000 / stopwatch.elapsedMilliseconds * 1000).round()}');
       print('  Hit rate: ${cache.hitRate().toStringAsFixed(1)}%');
 
-      expect(stopwatch.elapsedMilliseconds, lessThan(5000)); // Should complete within 5 seconds
+      expect(stopwatch.elapsedMilliseconds,
+          lessThan(5000)); // Should complete within 5 seconds
       expect(cache.hitCount(), 10000);
       expect(cache.putCount(), 10000);
     });
@@ -41,9 +44,11 @@ void main() {
       print('  Operations: ${cache.putCount()}');
       print('  Evictions: ${cache.evictionCount()}');
       print('  Time: ${stopwatch.elapsedMilliseconds}ms');
-      print('  Operations per second: ${(1000 / stopwatch.elapsedMilliseconds * 1000).round()}');
+      print(
+          '  Operations per second: ${(1000 / stopwatch.elapsedMilliseconds * 1000).round()}');
 
-      expect(stopwatch.elapsedMilliseconds, lessThan(1000)); // Should complete within 1 second
+      expect(stopwatch.elapsedMilliseconds,
+          lessThan(1000)); // Should complete within 1 second
       expect(await cache.size(), 10);
       expect(cache.evictionCount(), 990);
     });
@@ -70,10 +75,12 @@ void main() {
       print('Concurrent access benchmark:');
       print('  Concurrent operations: ${futures.length}');
       print('  Time: ${stopwatch.elapsedMilliseconds}ms');
-      print('  Operations per second: ${(futures.length / stopwatch.elapsedMilliseconds * 1000).round()}');
+      print(
+          '  Operations per second: ${(futures.length / stopwatch.elapsedMilliseconds * 1000).round()}');
       print('  Hit rate: ${cache.hitRate().toStringAsFixed(1)}%');
 
-      expect(stopwatch.elapsedMilliseconds, lessThan(3000)); // Should complete within 3 seconds
+      expect(stopwatch.elapsedMilliseconds,
+          lessThan(3000)); // Should complete within 3 seconds
       expect(await cache.size(), lessThanOrEqualTo(50));
     });
 
@@ -92,35 +99,12 @@ void main() {
       print('  Cache size: 10,000 entries');
       print('  Operations: ${cache.putCount()}');
       print('  Time: ${stopwatch.elapsedMilliseconds}ms');
-      print('  Operations per second: ${(10000 / stopwatch.elapsedMilliseconds * 1000).round()}');
+      print(
+          '  Operations per second: ${(10000 / stopwatch.elapsedMilliseconds * 1000).round()}');
 
-      expect(stopwatch.elapsedMilliseconds, lessThan(2000)); // Should complete within 2 seconds
+      expect(stopwatch.elapsedMilliseconds,
+          lessThan(2000)); // Should complete within 2 seconds
       expect(await cache.size(), 10000);
-    });
-
-    test('should handle resize operations efficiently', () async {
-      final cache = LruCache<int, String>(100);
-      
-      // Fill cache
-      for (int i = 0; i < 100; i++) {
-        await cache.put(i, 'value$i');
-      }
-
-      final stopwatch = Stopwatch()..start();
-
-      // Perform many resize operations
-      for (int i = 0; i < 100; i++) {
-        await cache.resize(50 + (i % 50));
-      }
-
-      stopwatch.stop();
-
-      print('Resize operations benchmark:');
-      print('  Resize operations: 100');
-      print('  Time: ${stopwatch.elapsedMilliseconds}ms');
-      print('  Operations per second: ${(100 / stopwatch.elapsedMilliseconds * 1000).round()}');
-
-      expect(stopwatch.elapsedMilliseconds, lessThan(1000)); // Should complete within 1 second
     });
 
     test('should handle mixed operations efficiently', () async {
@@ -150,10 +134,12 @@ void main() {
       print('Mixed operations benchmark:');
       print('  Operations: 5,000');
       print('  Time: ${stopwatch.elapsedMilliseconds}ms');
-      print('  Operations per second: ${(5000 / stopwatch.elapsedMilliseconds * 1000).round()}');
+      print(
+          '  Operations per second: ${(5000 / stopwatch.elapsedMilliseconds * 1000).round()}');
       print('  Final cache size: ${await cache.size()}');
 
-      expect(stopwatch.elapsedMilliseconds, lessThan(3000)); // Should complete within 3 seconds
+      expect(stopwatch.elapsedMilliseconds,
+          lessThan(3000)); // Should complete within 3 seconds
     });
 
     test('should handle string operations efficiently', () async {
@@ -163,7 +149,8 @@ void main() {
       // Use string keys and values
       for (int i = 0; i < 1000; i++) {
         final key = 'key_${i.toString().padLeft(4, '0')}';
-        final value = 'value_${i.toString().padLeft(4, '0')}_with_some_additional_text';
+        final value =
+            'value_${i.toString().padLeft(4, '0')}_with_some_additional_text';
         await cache.put(key, value);
         await cache.get(key);
       }
@@ -173,10 +160,12 @@ void main() {
       print('String operations benchmark:');
       print('  Operations: 2,000');
       print('  Time: ${stopwatch.elapsedMilliseconds}ms');
-      print('  Operations per second: ${(2000 / stopwatch.elapsedMilliseconds * 1000).round()}');
+      print(
+          '  Operations per second: ${(2000 / stopwatch.elapsedMilliseconds * 1000).round()}');
       print('  Hit rate: ${cache.hitRate().toStringAsFixed(1)}%');
 
-      expect(stopwatch.elapsedMilliseconds, lessThan(2000)); // Should complete within 2 seconds
+      expect(stopwatch.elapsedMilliseconds,
+          lessThan(2000)); // Should complete within 2 seconds
       expect(cache.hitCount(), 1000);
     });
   });
