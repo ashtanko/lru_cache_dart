@@ -2,8 +2,9 @@ name: lru_cache
 homepage: https://shtanko.dev
 description: >-
   a simple least recently used (LRU) cache implementation in dart.
-version: 0.0.2
+version: 0.1.0
 repository: https://github.com/ashtanko/lru_cache
+issue_tracker: https://github.com/ashtanko/lru_cache/issues
 
 topics:
   - lru-cache

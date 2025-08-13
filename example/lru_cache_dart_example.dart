@@ -3,18 +3,18 @@ import 'package:lru_cache/lru_cache.dart';
 Future<void> main() async {
   final cache = LruCache<String, String>(2);
 
-  cache.put('key1', 'value1');
-  cache.put('key2', 'value2');
+  await cache.put('key1', 'value1');
+  await cache.put('key2', 'value2');
   // ignore: avoid_print
   print(await cache.get('key1')); // Prints 'value1'
   // ignore: avoid_print
   print(await cache.get('key2')); // Prints 'value2'
 
-  cache.put('key3', 'value3');
+  await cache.put('key3', 'value3');
   // ignore: avoid_print
   print(await cache.get('key1')); // Prints 'null' because 'key1' was evicted
 
-  cache.put('key4', 'value4');
+  await cache.put('key4', 'value4');
   // ignore: avoid_print
   print(await cache.get('key2')); // Prints 'null' because 'key2' was evicted
   // ignore: avoid_print

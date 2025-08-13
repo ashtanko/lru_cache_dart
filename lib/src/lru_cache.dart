@@ -42,11 +42,14 @@ class LruCache<K, V> {
   Future<V?> get(K key) async {
     assert(key != null, 'key must not be null');
     return await _lock.synchronized(() {
-      V? mapValue = _map[key];
-      if (mapValue != null) {
+      // Access hit: move to most-recent position
+      final V? existingValue = _map.remove(key);
+      if (existingValue != null) {
         _hitCount++;
-        return mapValue;
+        _map[key] = existingValue; // reinsert to mark as most-recently used
+        return existingValue;
       }
+
       _missCount++;
       final V? createdValue = create(key);
       if (createdValue == null) {
@@ -54,18 +57,16 @@ class LruCache<K, V> {
       }
 
       _createCount++;
-      mapValue = _map.putIfAbsent(key, () => createdValue);
-      if (mapValue != null) {
+      // Insert newly created value as most-recent
+      final V? previous = _map[key];
+      if (previous != null) {
         // Undo the put if there was a conflict
-        _map[key] = mapValue;
+        _map[key] = previous;
+        entryRemoved(false, key, createdValue, previous);
+        return previous;
       } else {
+        _map[key] = createdValue;
         _size += safeSizeOf(key, createdValue);
-      }
-
-      if (mapValue != null) {
-        entryRemoved(false, key, createdValue, mapValue);
-        return mapValue;
-      } else {
         _trimToSize(_maxSize);
         return createdValue;
       }
@@ -74,7 +75,7 @@ class LruCache<K, V> {
 
   /// Associates the [key] with the [value] in the cache.
   /// If the [key] is already in the cache, the [value] is replaced and the
-  /// size of the cache is adjusted.
+  /// size of the cache is adjusted. The entry is marked as most recently used.
   /// If the [key] is not in the cache, the [value] is added and the size of
   /// the cache is adjusted.
   /// If the size of the cache exceeds the [maxSize], the least recently used
@@ -84,17 +85,18 @@ class LruCache<K, V> {
     assert(key != null && value != null, 'key and value must not be null');
     return await _lock.synchronized(() {
       _putCount++;
-      _size += safeSizeOf(key, value);
 
-      final V? previous = _map[key];
+      // Determine size delta
+      final V? previous = _map.remove(key); // remove to ensure recency update
+      _map[key] = value; // reinsert as most-recent
+
+      // Adjust size counters
+      _size += safeSizeOf(key, value);
       if (previous != null) {
         _size -= safeSizeOf(key, previous);
-      }
-      _map[key] = value;
-
-      if (previous != null) {
         entryRemoved(false, key, previous, value);
       }
+
       _trimToSize(_maxSize);
       return previous;
     });
@@ -103,37 +105,34 @@ class LruCache<K, V> {
   /// Evicts the least recently used entries until the size of the cache is
   /// less than or equal to the [maxSize].
   /// If the [maxSize] is less than 0, all entries are evicted.
-  /// This method is called by [put] and [resize] after adding or updating
-  /// an entry.
-  Future<void> _trimToSize(int maxSize) async {
-    await _lock.synchronized(() {
-      while (true) {
-        K key;
-        V value;
+  /// This method must be called while holding the [_lock].
+  void _trimToSize(int maxSize) {
+    while (true) {
+      K key;
+      V value;
 
-        if (_size < 0 || (_map.isEmpty && _size != 0)) {
-          throw StateError(
-            '$runtimeType.sizeOf() is reporting inconsistent results!',
-          );
-        }
-
-        if (_size <= maxSize) {
-          break;
-        }
-
-        final toEvict = _eldest();
-        if (toEvict == null) {
-          break;
-        }
-
-        key = toEvict.key;
-        value = toEvict.value;
-        _map.remove(key);
-        _size -= safeSizeOf(key, value);
-        _evictionCount++;
-        entryRemoved(true, key, value, null);
+      if (_size < 0 || (_map.isEmpty && _size != 0)) {
+        throw StateError(
+          '$runtimeType.sizeOf() is reporting inconsistent results!',
+        );
       }
-    });
+
+      if (_size <= maxSize) {
+        break;
+      }
+
+      final toEvict = _eldest();
+      if (toEvict == null) {
+        break;
+      }
+
+      key = toEvict.key;
+      value = toEvict.value;
+      _map.remove(key);
+      _size -= safeSizeOf(key, value);
+      _evictionCount++;
+      entryRemoved(true, key, value, null);
+    }
   }
 
   MapEntry<K, V>? _eldest() => _map.entries.firstOrNull;
@@ -155,8 +154,17 @@ class LruCache<K, V> {
     });
   }
 
+  /// Called after an entry has been removed from the cache.
+  ///
+  /// If [evicted] is true, the removal occurred to make space, otherwise it
+  /// was caused by a [put] or [remove].
   void entryRemoved(bool evicted, K key, V oldValue, V? newValue) {}
 
+  /// Called after a cache miss to compute a value for the requested [key].
+  ///
+  /// Implementations must avoid re-entering this cache (e.g., by calling
+  /// other methods on this instance), since these methods are synchronized and
+  /// could deadlock.
   V? create(K key) => null;
 
   /// Returns the size of the [value] for the [key].
@@ -181,7 +189,9 @@ class LruCache<K, V> {
 
   /// Removes all entries from the cache.
   Future<void> evictAll() async {
-    await _trimToSize(-1);
+    await _lock.synchronized(() {
+      _trimToSize(-1);
+    });
   }
 
   /// Returns the number of entries in the cache.

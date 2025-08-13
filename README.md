@@ -4,65 +4,95 @@
 
 [![Coverage](https://github.com/ashtanko/lru_cache/actions/workflows/coverage.yml/badge.svg)](https://github.com/ashtanko/lru_cache/actions/workflows/coverage.yml)
 [![Dart CI](https://github.com/ashtanko/lru_cache/actions/workflows/build.yml/badge.svg)](https://github.com/ashtanko/lru_cache/actions/workflows/build.yml)
-
 [![lru_cache](https://img.shields.io/pub/v/lru_cache?label=lru_cache)](https://pub.dev/packages/lru_cache)
-
-[![CodeFactor](https://www.codefactor.io/repository/github/ashtanko/lru_cache_dart/badge)](https://www.codefactor.io/repository/github/ashtanko/lru_cache_dart)
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/a03583ebe6b945c1b2c594b5809e908f)](https://app.codacy.com/gh/ashtanko/lru_cache/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
-[![codecov](https://codecov.io/gh/ashtanko/lru_cache_dart/graph/badge.svg?token=V9O0ALxsV1)](https://codecov.io/gh/ashtanko/lru_cache_dart)
-[![Codacy Badge](https://app.codacy.com/project/badge/Coverage/a03583ebe6b945c1b2c594b5809e908f)](https://app.codacy.com/gh/ashtanko/lru_cache/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_coverage)
 
 ### Features
 
 - **LRU (Least Recently Used) Cache**: Keeps track of the most recently accessed items and evicts the least recently used items when the cache reaches its maximum size.
-
-- **Customizable Size Calculation**: Allows customization of how the size of cached items is calculated through a `sizeOf` method, which can be overridden to fit specific use cases.
-
-- **Thread-safe Operations**: Uses synchronized methods to ensure thread safety when accessing and modifying the cache, making it safe for concurrent use.
+- **Customizable Size Calculation**: Override `sizeOf` to control capacity by an arbitrary weight (e.g., bytes) instead of entry count.
+- **Thread-safe Operations**: Uses synchronization to ensure thread safety when accessing and modifying the cache.
 
 ## Getting started 🎉
 
-To use `lru_cache` in your Dart project, add it to your `pubspec.yaml`:
+Add to your `pubspec.yaml`:
+
+```yaml
+dependencies:
+  lru_cache: ^0.1.0
+```
+
+Import the package:
 
 ```dart
-dependencies:
-  lru_cache: ^latest_version
+import 'package:lru_cache/lru_cache.dart';
 ```
 
 ## Usage
-Here's an example of how to use the LruCache class:
+Here's an example of how to use the `LruCache` class:
 
 ```dart
 import 'package:lru_cache/lru_cache.dart';
 
-void main() {
+Future<void> main() async {
   // Create an LruCache with a maximum size of 2
   final cache = LruCache<String, String>(2);
 
   // Put key-value pairs into the cache
-  cache.put('key1', 'value1');
-  cache.put('key2', 'value2');
+  await cache.put('key1', 'value1');
+  await cache.put('key2', 'value2');
 
   // Retrieve values from the cache
-  print(cache.get('key1')); // Prints 'value1'
-  print(cache.get('key2')); // Prints 'value2'
+  print(await cache.get('key1')); // Prints 'value1'
+  print(await cache.get('key2')); // Prints 'value2'
 
   // Add another key-value pair, evicting the least recently used item
-  cache.put('key3', 'value3');
-  print(cache.get('key1')); // Prints 'null' because 'key1' was evicted
+  await cache.put('key3', 'value3');
+  print(await cache.get('key1')); // Prints 'null' because 'key1' was evicted
 
   // Retrieve the remaining items from the cache
-  print(cache.get('key2')); // Prints 'value2'
-  print(cache.get('key3')); // Prints 'value3'
+  print(await cache.get('key2')); // Prints 'value2'
+  print(await cache.get('key3')); // Prints 'value3'
 
   // Display cache statistics
-  print(cache.toString()); // Prints 'LruCache[maxSize=2,hits=2,misses=1,hitRate=66%]'
+  print(cache.toString()); // LruCache[maxSize=2,hits=2,misses=1,hitRate=66%]
 }
 ```
 
+### Weighted capacity with sizeOf
+
+You can override `sizeOf` to count capacity by a custom weight. For example, keep total string length under a limit:
+
+```dart
+class WeightedCache extends LruCache<String, String> {
+  WeightedCache(super.maxSize);
+  @override
+  int sizeOf(String key, String value) => value.length;
+}
+
+final cache = WeightedCache(5);
+await cache.put('a', 'A');   // total 1
+await cache.put('b', 'BB');  // total 3
+await cache.put('c', 'CCC'); // would be 6 -> evicts LRU entries to fit 5
+```
+
+### API overview
+
+- `Future<V?> get(K key)`: Returns value or null; reorders entry as most recent.
+- `Future<V?> put(K key, V value)`: Adds or replaces; reorders as most recent.
+- `Future<V?> remove(K key)`: Removes and returns previous value if any.
+- `Future<void> resize(int maxSize)`: Changes capacity and trims if needed.
+- `Future<void> evictAll()`: Removes all entries.
+- `int maxSize()`, `Future<int> size()`: Capacity and current weighted size.
+- Stats: `hitCount()`, `missCount()`, `createCount()`, `putCount()`, `evictionCount()`.
+- Hooks for subclassing: `V? create(K key)`, `void entryRemoved(...)`, `int sizeOf(...)`.
+
+### Thread-safety
+
+All mutating operations are synchronized. Avoid calling back into the same cache from `create` or `entryRemoved` to prevent re-entrancy.
+
 ## Contributing
 
-Contributions are welcome! Please read the contributing guide to learn how to contribute to the project and set up a development environment.
+Contributions are welcome! Please open issues and pull requests on GitHub.
 
 ## License
 
