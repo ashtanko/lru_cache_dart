@@ -19,7 +19,7 @@ platforms:
   windows:
 
 environment:
-  sdk: ^3.5.0
+  sdk: ^3.7.0
 
 dependencies:
   synchronized: ^3.4.0

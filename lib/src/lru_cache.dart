@@ -17,9 +17,9 @@ class LruCache<K, V> {
   int _missCount = 0;
 
   LruCache(int maxSize)
-      : assert(maxSize > 0, 'maxSize must be greater than 0'),
-        _maxSize = maxSize,
-        _map = LinkedHashMap<K, V>();
+    : assert(maxSize > 0, 'maxSize must be greater than 0'),
+      _maxSize = maxSize,
+      _map = LinkedHashMap<K, V>();
 
   /// Resizes the cache to the specified [maxSize].
   /// If the new [maxSize] is smaller than the current size of the cache,

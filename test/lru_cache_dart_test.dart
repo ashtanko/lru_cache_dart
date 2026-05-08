@@ -311,27 +311,31 @@ void main() {
       },
     );
 
-    test('default create() returns null and createCount stays 0 on miss',
-        () async {
-      final cache = LruCache<int, String>(2);
-      expect(await cache.get(1), isNull);
-      expect(cache.createCount(), 0);
-      expect(cache.missCount(), 1);
-    });
+    test(
+      'default create() returns null and createCount stays 0 on miss',
+      () async {
+        final cache = LruCache<int, String>(2);
+        expect(await cache.get(1), isNull);
+        expect(cache.createCount(), 0);
+        expect(cache.missCount(), 1);
+      },
+    );
 
-    test('get() that creates a value triggers _trimToSize when over capacity',
-        () async {
-      final cache = _TestLruCache<int, String>(2);
-      await cache.put(1, 'A');
-      await cache.put(2, 'B');
-      // Miss: create() inserts a third entry; eldest must be evicted.
-      // Check via snapshot — calling get(1) would re-create via _TestLruCache.
-      await cache.get(3);
-      expect(await cache.size(), 2);
-      expect(cache.snapshot().containsKey(1), isFalse);
-      expect(cache.snapshot().containsKey(3), isTrue);
-      expect(cache.evictionCount(), 1);
-    });
+    test(
+      'get() that creates a value triggers _trimToSize when over capacity',
+      () async {
+        final cache = _TestLruCache<int, String>(2);
+        await cache.put(1, 'A');
+        await cache.put(2, 'B');
+        // Miss: create() inserts a third entry; eldest must be evicted.
+        // Check via snapshot — calling get(1) would re-create via _TestLruCache.
+        await cache.get(3);
+        expect(await cache.size(), 2);
+        expect(cache.snapshot().containsKey(1), isFalse);
+        expect(cache.snapshot().containsKey(3), isTrue);
+        expect(cache.evictionCount(), 1);
+      },
+    );
 
     test('put() returns null for a new key', () async {
       final cache = LruCache<String, String>(2);
@@ -352,18 +356,20 @@ void main() {
       expect(await cache.get('key1'), 'value2');
     });
 
-    test('replacement fires entryRemoved with evicted=false and newValue set',
-        () async {
-      final cache = _RecordingLruCache<String, String>(2);
-      await cache.put('key1', 'value1');
-      await cache.put('key1', 'value2');
-      expect(cache.events.length, 1);
-      final ev = cache.events.single;
-      expect(ev.evicted, isFalse);
-      expect(ev.key, 'key1');
-      expect(ev.oldValue, 'value1');
-      expect(ev.newValue, 'value2');
-    });
+    test(
+      'replacement fires entryRemoved with evicted=false and newValue set',
+      () async {
+        final cache = _RecordingLruCache<String, String>(2);
+        await cache.put('key1', 'value1');
+        await cache.put('key1', 'value2');
+        expect(cache.events.length, 1);
+        final ev = cache.events.single;
+        expect(ev.evicted, isFalse);
+        expect(ev.key, 'key1');
+        expect(ev.oldValue, 'value1');
+        expect(ev.newValue, 'value2');
+      },
+    );
 
     test('eviction sets evicted=true and newValue=null', () async {
       final cache = _RecordingLruCache<String, String>(2);
@@ -389,28 +395,33 @@ void main() {
       expect(ev.newValue, isNull);
     });
 
-    test('evictAll() fires entryRemoved for every entry with evicted=true',
-        () async {
-      final cache = _RecordingLruCache<String, String>(3);
-      await cache.put('key1', 'value1');
-      await cache.put('key2', 'value2');
-      await cache.put('key3', 'value3');
-      await cache.evictAll();
-      expect(cache.events.length, 3);
-      expect(cache.events.every((e) => e.evicted), isTrue);
-      expect(cache.events.every((e) => e.newValue == null), isTrue);
-      expect(
-        cache.events.map((e) => e.key).toSet(),
-        {'key1', 'key2', 'key3'},
-      );
-    });
+    test(
+      'evictAll() fires entryRemoved for every entry with evicted=true',
+      () async {
+        final cache = _RecordingLruCache<String, String>(3);
+        await cache.put('key1', 'value1');
+        await cache.put('key2', 'value2');
+        await cache.put('key3', 'value3');
+        await cache.evictAll();
+        expect(cache.events.length, 3);
+        expect(cache.events.every((e) => e.evicted), isTrue);
+        expect(cache.events.every((e) => e.newValue == null), isTrue);
+        expect(cache.events.map((e) => e.key).toSet(), {
+          'key1',
+          'key2',
+          'key3',
+        });
+      },
+    );
 
-    test('remove() on a non-existent key returns null and does not fire hook',
-        () async {
-      final cache = _RecordingLruCache<String, String>(2);
-      expect(await cache.remove('missing'), isNull);
-      expect(cache.events, isEmpty);
-    });
+    test(
+      'remove() on a non-existent key returns null and does not fire hook',
+      () async {
+        final cache = _RecordingLruCache<String, String>(2);
+        expect(await cache.remove('missing'), isNull);
+        expect(cache.events, isEmpty);
+      },
+    );
 
     test('entries with sizeOf == 0 do not consume capacity', () async {
       final cache = _ZeroSizeLruCache<int, String>(2);
