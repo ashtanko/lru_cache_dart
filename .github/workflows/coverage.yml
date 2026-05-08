@@ -6,9 +6,6 @@ jobs:
   coverage:
     runs-on: ubuntu-latest
 
-    container:
-      image: dart:3.7.0
-
     steps:
       - uses: actions/checkout@v3
       - name: Install dependencies
