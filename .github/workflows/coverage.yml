@@ -1,13 +1,14 @@
 name: Coverage
 
-on: [ push, pull_request ]
+on: [push, pull_request]
 
 jobs:
   coverage:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+      - uses: dart-lang/setup-dart@v1
       - name: Install dependencies
         run: dart pub get
       - name: Collect coverage
@@ -16,15 +17,15 @@ jobs:
           dart pub global run coverage:test_with_coverage
 
       - name: Check Code Coverage
-        uses: VeryGoodOpenSource/very_good_coverage@v2
+        uses: VeryGoodOpenSource/very_good_coverage@v3
         with:
           path: coverage/lcov.info
           min_coverage: 50
 
-      - uses: codecov/codecov-action@v3
+      - uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          file: coverage/lcov.info
+          files: coverage/lcov.info
 
       - name: Run codacy-coverage-reporter
         uses: codacy/codacy-coverage-reporter-action@v1
