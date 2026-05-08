@@ -9,7 +9,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        sdk: ['3.7', stable, beta]
+        sdk: ['3.10', stable, beta]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
