@@ -42,9 +42,13 @@ class LruCache<K, V> {
   Future<V?> get(K key) async {
     assert(key != null, 'key must not be null');
     return await _lock.synchronized(() {
-      V? mapValue = _map[key];
+      final V? mapValue = _map[key];
       if (mapValue != null) {
         _hitCount++;
+        // Re-insert so this entry becomes the most-recently-used in
+        // LinkedHashMap's insertion order, which is what _eldest() reads.
+        _map.remove(key);
+        _map[key] = mapValue;
         return mapValue;
       }
       _missCount++;
@@ -54,21 +58,10 @@ class LruCache<K, V> {
       }
 
       _createCount++;
-      mapValue = _map.putIfAbsent(key, () => createdValue);
-      if (mapValue != null) {
-        // Undo the put if there was a conflict
-        _map[key] = mapValue;
-      } else {
-        _size += safeSizeOf(key, createdValue);
-      }
-
-      if (mapValue != null) {
-        entryRemoved(false, key, createdValue, mapValue);
-        return mapValue;
-      } else {
-        _trimToSize(_maxSize);
-        return createdValue;
-      }
+      _map[key] = createdValue;
+      _size += safeSizeOf(key, createdValue);
+      _trimToSize(_maxSize);
+      return createdValue;
     });
   }
 
